@@ -1,0 +1,126 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+
+// Class to store subject details
+class Subject {
+    String name;
+    int difficulty;
+    int daysToExam;
+
+    Subject(String name, int difficulty, int daysToExam) {
+        this.name = name;
+        this.difficulty = difficulty;
+        this.daysToExam = daysToExam;
+    }
+}
+
+public class timetable {
+
+    // 🎨 Fancy title
+    static void printBanner() {
+        System.out.println("=======================================");
+        System.out.println("   📚 SMART STUDY TIMETABLE GENERATOR   ");
+        System.out.println("=======================================\n");
+    }
+
+    // 🎨 Menu
+    static void printMenu() {
+        System.out.println("Choose an option:");
+        System.out.println("1. Add Subjects");
+        System.out.println("2. Generate Timetable");
+        System.out.println("3. Exit");
+        System.out.print("👉 Enter choice: ");
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Subject> subjects = new ArrayList<>();
+        int hours = 0;
+
+        printBanner();
+
+        while (true) {
+            printMenu();
+            int choice = sc.nextInt();
+
+            switch (choice) {
+                case 1 -> {
+                    System.out.print("\nHow many subjects do you want to add? ");
+                    int n = sc.nextInt();
+
+                    for (int i = 0; i < n; i++) {
+                        System.out.println("\n✏️ Enter details for Subject " + (i + 1));
+                        System.out.print("Name: ");
+                        String name = sc.next();
+
+                        System.out.print("Difficulty (1=Easy, 5=Hard): ");
+                        int diff = sc.nextInt();
+
+                        System.out.print("Days until exam: ");
+                        int days = sc.nextInt();
+
+                        subjects.add(new Subject(name, diff, days));
+                    }
+
+                    System.out.print("\n⏰ Enter available study hours per day: ");
+                    hours = sc.nextInt();
+
+                    System.out.println("\n✅ Subjects added successfully!\n");
+                }
+
+                case 2 -> {
+                    if (subjects.isEmpty() || hours == 0) {
+                        System.out.println("\n⚠️ Please add subjects first!\n");
+                        break;
+                    }
+
+                    Map<String, Integer> weights = new HashMap<>();
+                    int totalWeight = 0;
+
+                    for (Subject s : subjects) {
+                        int weight = s.difficulty + (10 - s.daysToExam);
+                        if (weight < 1) weight = 1;
+                        weights.put(s.name, weight);
+                        totalWeight += weight;
+                    }
+
+                    StringBuilder timetable = new StringBuilder();
+                    timetable.append("\n╔════════════════════════════════════╗\n");
+                    timetable.append("     📅 SUGGESTED STUDY TIMETABLE      \n");
+                    timetable.append("╚════════════════════════════════════╝\n");
+
+                    for (Subject s : subjects) {
+                        int allocated = (weights.get(s.name) * hours) / totalWeight;
+                        if (allocated == 0) allocated = 1;
+
+                        timetable.append(String.format(" %-10s │ %2d hrs\n", s.name, allocated));
+                    }
+
+                    timetable.append("══════════════════════════════════════\n");
+
+                    // Print in console
+                    System.out.println(timetable);
+
+                    // Save to file
+                    try {
+                        FileWriter writer = new FileWriter("study_timetable.txt");
+                        writer.write(timetable.toString());
+                        writer.close();
+                        System.out.println("💾 Timetable saved to study_timetable.txt\n");
+                    } catch (IOException e) {
+                        System.out.println("❌ Error saving file: " + e.getMessage());
+                    }
+                }
+
+                case 3 -> {
+                    System.out.println("\n👋 Thank you for using Smart Study Timetable Generator!");
+                    sc.close();
+                    return;
+                }
+
+                default -> System.out.println("\n⚠️ Invalid choice! Please try again.\n");
+            }
+        }
+    }
+}
